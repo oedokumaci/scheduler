@@ -1,9 +1,15 @@
 <div align="center">
 
-This is a template Python repository to start a fresh project with a default setup.
+<!-- Provide information on your repository here. -->
 
-![Tests](https://github.com/oedokumaci/template-python/actions/workflows/tests.yml/badge.svg)
-![Quality](https://github.com/oedokumaci/template-python/actions/workflows/quality.yml/badge.svg)
+scheduler
+
+<!-- <img src=./style/repo.png width="800"> -->
+
+&nbsp;
+
+![Tests](https://github.com/oedokumaci/scheduler/actions/workflows/tests.yml/badge.svg)
+![Quality](https://github.com/oedokumaci/scheduler/actions/workflows/quality.yml/badge.svg)
 [![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)
@@ -11,47 +17,88 @@ This is a template Python repository to start a fresh project with a default set
 
 </div>
 
-The project setup includes:
+&nbsp;
+
+# Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [User Guide](#user-guide)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Configuration](#configuration)
+    - [Quick Start](#quick-start)
+    - [Detailed Usage](#detailed-usage)
+- [Developer Guide](#developer-guide)
+  - [Makefile](#makefile)
+  - [Setup](#setup)
+  - [Development](#development)
+    - [Pre-commit Hooks](#pre-commit-hooks)
+
+&nbsp;
+
+# User Guide
+
+## Requirements
 
 - Python >= 3.10
-- Ubuntu, MacOS, Windows latest OS versions
-- [PDM](https://pdm.fming.dev/latest/) for dependency management
-- [GitHub Actions](https://github.com/features/actions) and [pre-commit](https://pre-commit.com/) for linting, formatting, CI/CD
-  - [Black](https://black.readthedocs.io/en/stable/#) for code formatting
-  - [Mypy](https://mypy.readthedocs.io/en/stable/) for static type checking
-  - [Pytest](https://docs.pytest.org/) for testing
-- [MIT](https://en.wikipedia.org/wiki/MIT_License) license
-- The above badges of this README.md
+- OS: Ubuntu, MacOS, Windows
 
-# Getting Started
+## Installation
 
-1. Install [Python](https://www.python.org/downloads/) 3.10 in your local machine. For MacOS use
-```zsh
-brew install python@3.10
+Pip installing the package from PyPI is not yet available. Instead, download [from this link](https://github.com/oedokumaci/scheduler/archive/refs/heads/main.zip) and unzip. You will also need to change the folder name from scheduler-main to scheduler (or cd into scheduler-main in step 2 below). Alternatively, if you have git installed, simply run 
+```bash
+git clone https://github.com/oedokumaci/scheduler
 ```
-2. Click on the `Use this template` button [at this page](https://github.com/oedokumaci/template-python) to create a new repository from this template (you must be logged in to GitHub to see the button).
-3. Name your repository and click `Create repository from template`. If the repository name is more than one word, make sure to use -hyphens- instead of spaces or underscores.
-4. Git clone the repository to your local machine.
-5. Cd into the repository directory.
-6. Run template_setup.py with
-```zsh
-python template_setup.py [--user-name YOUR_GIT_USER_NAME] [--user-email YOUR_GIT_USER_EMAIL]
-```
-7. Follow the instructions in the terminal.
+to install the package locally. After downloading, here are the steps to install the dependencies in a virtual environment using [PDM]:
 
-### Running the setup script will:
- - Rename file contents, names, and directories that contains template repository name with the new repository name
- - Rename user name and user email in and `README_main.md`
- - Configure GitHub user name and user email locally
- - Remove `pdm.lock`, `pyproject.toml`, and `requirements.txt`
- - Remove `README.md` and rename `README_main.md` to `README.md`
- - If not installed pip install [PDM](https://pdm.fming.dev/latest/) in your local machine
- - Update PDM to the latest version
- - [PDM](https://pdm.fming.dev/latest/) init with Python 3.10. Select the default options (hit `Enter`) when prompted except:
-   - Select `y` to make project installable
- - Install dependencies with [PDM](https://pdm.fming.dev/latest/)
- - Install [pre-commit](https://pre-commit.com/) hooks to local `.git` folder
- - Prompt user an option include `.vscode/settings.json`
- - Remove `template_setup.py`
- - Prompt user an option to git add commit and push
- - Remove `.mypy_cache` and `.pytest_cache` folders
+1. `pip install pdm`
+2. `cd scheduler`
+3. `pdm install --prod`
+
+## Usage
+
+### Configuration
+
+First edit the `./config/config.yaml` to your liking. Example config files can be found at `./config/`.
+
+### Quick Start
+
+After configuring the `./config/config.yaml`, simply run the following command in the project directory.
+```bash
+pdm run python -m scheduler
+```
+
+### Detailed Usage
+For a list of all the CLI arguments and options, run
+```bash
+pdm run python -m scheduler --help
+```
+
+&nbsp;
+
+# Developer Guide
+
+## Makefile
+There is a Makefile in the project directory. You can run `make help` to see the available commands as below. The Makefile is also used in the CI/CD pipeline.
+
+<img src=./style/make.png width="600">
+
+## Setup
+
+This project is [PDM]-managed, which is compatible with [PEP 621](https://www.python.org/dev/peps/pep-0621) (also compatible with the <i>rejected</i> [PEP 582](https://www.python.org/dev/peps/pep-0582)). If you are a developer, first `pip install pdm` and then `git clone` the project. Next you can `pdm install` in the project directory, which will install all the dependencies in a [virtual environment](https://pdm.fming.dev/latest/usage/venv/).
+
+## Development
+
+### Pre-commit Hooks
+
+The project also uses pre-commit hooks. Because the project uses [PDM], you **do not** need to `pip install pre-commit`. Instead, run directly
+```bash
+pdm run pre-commit install
+```
+in the project directory to install hooks to your local `.git`. Alternatively, you can also activate the virtual environment and run
+```bash
+pre-commit install
+```
+
+[PDM]: https://pdm.fming.dev

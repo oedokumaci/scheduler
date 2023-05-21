@@ -1,31 +1,31 @@
-[tool.pdm]
-[tool.pdm.dev-dependencies]
-workflow = [
-    "pre-commit>=3.2.2",
-    "mypy>=1.2.0",
-    "types-PyYAML>=6.0.12.9",
-]
-test = [
-    "pytest>=7.3.1",
-]
 
 [project]
-name = "template-python"
+name = "scheduler"
 version = "0.1.0"
 description = ""
 authors = [
     {name = "oedokumaci", email = "oral.ersoy.dokumaci@gmail.com"},
 ]
 dependencies = [
-    "pdm>=2.5.3",
-    "typer>=0.7.0",
+    "pdm>=2.6.1",
+    "typer>=0.9.0",
     "pyyaml>=6.0",
     "pydantic>=1.10.7",
 ]
 requires-python = ">=3.10"
-readme = "README_main.md"
+readme = "README.md"
 license = {text = "MIT"}
 
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm.dev-dependencies]
+workflow = [
+    "pre-commit>=3.3.2",
+    "mypy>=1.3.0",
+    "types-PyYAML>=6.0.12.9",
+]
+test = [
+    "pytest>=7.3.1",
+]

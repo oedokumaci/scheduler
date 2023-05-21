@@ -5,9 +5,9 @@ from typing import Generator
 import pytest
 from typer.testing import CliRunner, Result
 
-from template_python.config import YAMLConfig, YAMLConfigDict
-from template_python.path import CONFIG_DIR, LOGS_DIR, OUTPUTS_DIR, ROOT_DIR
-from template_python.utils import init_logger
+from scheduler.config import YAMLConfig, YAMLConfigDict
+from scheduler.path import CONFIG_DIR, LOGS_DIR, OUTPUTS_DIR, ROOT_DIR
+from scheduler.utils import init_logger
 
 # Path to the log file to be used for testing
 pytest_log_file: Path = LOGS_DIR / "pytest_test.log"
@@ -84,7 +84,7 @@ def main_with_default_values(
     and yields the result. The fixture is used to test the main function with default
     values.
     """
-    from template_python.cli import app
+    from scheduler.cli import app
 
     result = CliRunner().invoke(app, [pytest_log_file.name])
     yield result
@@ -103,7 +103,7 @@ def main_with_existing_log_file(
     the result and the option. The fixture is used to test the main function with
     an existing log file.
     """
-    from template_python.cli import app
+    from scheduler.cli import app
 
     # Create an empty log file in the logs directory
     (LOGS_DIR / pytest_log_file.name).touch()
@@ -127,7 +127,7 @@ def main_with_help_option(
     This fixture invokes the main function with the help option and yields the result.
     The fixture is used to test the main function with the help option.
     """
-    from template_python.cli import app
+    from scheduler.cli import app
 
     result = CliRunner().invoke(app, ["--help"])
 

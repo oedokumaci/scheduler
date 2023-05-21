@@ -6,7 +6,7 @@ from pathlib import Path
 from time import time
 from typing import Callable, ParamSpec, TypeVar
 
-from template_python.path import LOGS_DIR
+from scheduler.path import LOGS_DIR
 
 # Define TypeVars and ParamSpecs
 R = TypeVar("R")

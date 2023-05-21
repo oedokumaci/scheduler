@@ -6,7 +6,7 @@ from typing import TypedDict
 import yaml
 from pydantic import BaseModel, validator
 
-from template_python.path import CONFIG_DIR
+from scheduler.path import CONFIG_DIR
 
 
 class YAMLConfig(BaseModel):

@@ -2,9 +2,9 @@
 
 import typer
 
-from template_python.config import YAML_CONFIG
-from template_python.path import LOGS_DIR
-from template_python.utils import check_log_file_name, init_logger
+from scheduler.config import YAML_CONFIG
+from scheduler.path import LOGS_DIR
+from scheduler.utils import check_log_file_name, init_logger
 
 app = typer.Typer()
 
@@ -20,7 +20,7 @@ override_option = typer.Option(False, help="Override the log file if it exists."
 def main(
     log_file_name: str = log_file_name_argument, override: bool = override_option
 ) -> None:
-    """CLI for template-python."""
+    """CLI for scheduler."""
 
     # Check if log file exists, if so ask to overwrite
     log_file = LOGS_DIR / log_file_name

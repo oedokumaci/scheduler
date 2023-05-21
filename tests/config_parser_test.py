@@ -2,7 +2,7 @@ from typing import Type
 
 import pytest
 
-from template_python.config import YAMLConfig
+from scheduler.config import YAMLConfig
 
 
 def test_yaml_config_instance(yaml_config_instance: YAMLConfig) -> None:

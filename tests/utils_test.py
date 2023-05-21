@@ -5,8 +5,8 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from pytest import LogCaptureFixture
 
-from template_python.path import LOGS_DIR
-from template_python.utils import check_log_file_name, timer_decorator
+from scheduler.path import LOGS_DIR
+from scheduler.utils import check_log_file_name, timer_decorator
 
 
 @pytest.mark.parametrize(
