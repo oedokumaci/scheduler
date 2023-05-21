@@ -45,6 +45,11 @@ repos:
 
   - repo: local
     hooks:
+      - id: pdm-lock-check
+        name: pdm-lock-check
+        entry: pdm lock --check
+        language: system
+        pass_filenames: false
       - id: pdm-export
         name: pdm-export
         entry: pdm export
@@ -52,11 +57,7 @@ repos:
           - -o
           - requirements.txt
           - --without-hashes
-        language: system
-        pass_filenames: false
-      - id: pdm-lock-check
-        name: pdm-lock-check
-        entry: pdm lock --check
+          - -v
         language: system
         pass_filenames: false
       - id: mypy
