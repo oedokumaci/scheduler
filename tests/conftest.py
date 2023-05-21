@@ -53,7 +53,9 @@ def yaml_config_instance() -> YAMLConfig:
         YAMLConfig: The YAMLConfig instance to use for testing.
     """
     config: YAMLConfigDict = {
-        "log_file_name": "valid.log",
+        "log_file_name": "valid_logs.log",
+        "exams_file": "valid_exams.xlsx",
+        "proctors_file": "valid_proctors.xlsx",
     }
     return YAMLConfig(**config)
 

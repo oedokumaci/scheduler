@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 import yaml
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, root_validator, validator
 
 from scheduler.path import CONFIG_DIR
 
@@ -17,6 +17,8 @@ class YAMLConfig(BaseModel):
 
     # Define the fields for the config file
     log_file_name: str
+    exams_file: str
+    proctors_file: str
 
     # Define a validator to ensure the log_file_name is valid
     @validator("log_file_name")
@@ -43,9 +45,52 @@ class YAMLConfig(BaseModel):
             )
         return v
 
+    # Define a validator to ensure the exams_file and proctors_file are valid
+    @validator("exams_file", "proctors_file")
+    def exams_and_proctors_files_must_be_valid(cls, v: str) -> str:
+        """Validator to ensure the exams_file and proctors_file are valid.
+
+        Args:
+            v (str): The exams_file or proctors_file value.
+
+        Raises:
+            ValueError: If exams_file or proctors_file starts with /.
+            ValueError: If exams_file or proctors_file is not a .xlsx file.
+
+        Returns:
+            str: The validated exams_file or proctors_file.
+        """
+        if v.startswith("/"):
+            raise ValueError(f"{v!r} should not start with /, {v!r} starts with /")
+        if not v.endswith(".xlsx"):
+            raise ValueError(f"{v!r} should be a .xlsx file, {v!r} is not")
+        return v
+
+    # Define a validator to ensure the exams_file and proctors_file are different
+    @root_validator(skip_on_failure=True)
+    def exams_and_proctors_files_must_be_different(cls, values: dict) -> dict:
+        """Validator to ensure the exams_file and proctors_file are different.
+
+        Args:
+            values (dict): The exams_file and proctors_file values.
+
+        Raises:
+            ValueError: If exams_file and proctors_file are the same.
+
+        Returns:
+            dict: The validated exams_file and proctors_file.
+        """
+        if values["exams_file"] == values["proctors_file"]:
+            raise ValueError(
+                f"exams_file and proctors_file should be different, {values['exams_file']!r} and {values['proctors_file']!r} are the same"
+            )
+        return values
+
 
 class YAMLConfigDict(TypedDict):
     log_file_name: str
+    exams_file: str
+    proctors_file: str
 
 
 def parse_and_validate_configs() -> YAMLConfig:
