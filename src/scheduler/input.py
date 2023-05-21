@@ -2,9 +2,8 @@ import pandas as pd
 from rich import print as rprint
 
 from scheduler.config import YAML_CONFIG
-from scheduler.exam import Exam
+from scheduler.exam_proctor import Exam, Proctor
 from scheduler.path import INPUTS_DIR
-from scheduler.proctor import Proctor
 
 
 def clean_exams_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -122,6 +121,36 @@ def get_proctors(clean_proctors_df: pd.DataFrame) -> list[Proctor]:
     return proctors
 
 
+def add_constraints(
+    exams: list[Exam], proctors: list[Proctor]
+) -> tuple[list[Exam], list[Proctor]]:
+    """Add constraints proctors using exams.
+
+    Args:
+        exams (list[Exam]): A list of Exam objects.
+        proctors (list[Proctor]): A list of Proctor objects.
+
+    Returns:
+        tuple[list[Exam], list[Proctor]]: A tuple of lists of Exam and Proctor objects.
+    """
+    first_year_ma_proctors = [
+        proctor for proctor in proctors if proctor.proctor_class == 1
+    ]
+    second_year_ma_proctors = [
+        proctor for proctor in proctors if proctor.proctor_class == 2
+    ]
+
+    for exam in exams:
+        if exam.is_first_year_masters_exam:
+            for proctor_one in first_year_ma_proctors:
+                proctor_one.unavailable.append(exam.block)
+        elif exam.is_second_year_masters_exam:
+            for proctor_two in second_year_ma_proctors:
+                proctor_two.unavailable.append(exam.block)
+
+    return exams, proctors
+
+
 def main() -> tuple[list[Exam], list[Proctor]]:
     """Main function to process exams and proctors.
 
@@ -140,6 +169,9 @@ def main() -> tuple[list[Exam], list[Proctor]]:
     # Get the list of exams and proctors
     exams = get_exams(cleaned_exams_df)
     proctors = get_proctors(cleaned_proctors_df)
+
+    # Add constraints to proctors using exams
+    exams, proctors = add_constraints(exams, proctors)
 
     # Print the list of exams and proctors using rich library
     rprint(exams)

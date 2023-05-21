@@ -21,6 +21,7 @@ class Exam:
         self.time = time.strip()
         self.classroom = classroom.strip()
         self.instructor = instructor.strip()
+        self.proctors: list[Proctor] = []
 
     @property
     def code(self) -> int:
@@ -88,3 +89,33 @@ class Exam:
         """
         return f"""EXAM: {self.title}, {self.block}, {self.classroom}, {self.instructor}
 ATTRIBUTES: 1st Year MA Exam = {self.is_first_year_masters_exam}, 2nd Year MA Exam = {self.is_second_year_masters_exam}, Requires PhD Proctor = {self.requires_phd_proctor}"""
+
+
+class Proctor:
+    def __init__(
+        self, name: str, email: str, total_proctored_before: int, proctor_class: int
+    ) -> None:
+        """Initialize a Proctor object.
+
+        Args:
+            name (str): The name of the proctor.
+            email (str): The email address of the proctor.
+            total_proctored_before (int): The total number of exams proctored by the proctor before.
+            proctor_class (int): The proctor class of the proctor.
+
+        """
+        self.name = name.strip()
+        self.email = email.strip()
+        self.total_proctored_before = total_proctored_before
+        self.proctor_class = proctor_class
+        self.unavailable: list[str] = []
+        self.duties: list[Exam] = []
+
+    def __repr__(self) -> str:
+        """Return a string representation of the Proctor object.
+
+        Returns:
+            str: A string representation of the Proctor object.
+        """
+        return f"""PROCTOR: {self.name}, {self.email}, {self.total_proctored_before}, {self.proctor_class}
+    ATTRIBUTES: Unavailable = {self.unavailable}, Duties = {self.duties}"""
