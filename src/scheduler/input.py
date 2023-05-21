@@ -4,6 +4,7 @@ from rich import print as rprint
 from scheduler.config import YAML_CONFIG
 from scheduler.exam import Exam
 from scheduler.path import INPUTS_DIR
+from scheduler.proctor import Proctor
 
 
 def clean_exams_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -29,6 +30,25 @@ def clean_exams_df(df: pd.DataFrame) -> pd.DataFrame:
 
     # Convert Exam_Date column to string
     df["Exam_Date"] = df["Exam_Date"].astype(str)
+
+    return df
+
+
+def clean_proctors_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean the proctors dataframe.
+
+    Args:
+        df (pd.DataFrame): The proctors dataframe to be cleaned.
+
+    Returns:
+        pd.DataFrame: The cleaned proctors dataframe.
+    """
+    # Replace blank spaces in column names with underscores
+    df.columns = df.columns.str.replace(" ", "_")
+
+    # Convert Total_Proctored_Before and Proctor_Class columns to int
+    df["Total_Proctored_Before"] = df["Total_Proctored_Before"].astype(int)
+    df["Proctor_Class"] = df["Proctor_Class"].astype(int)
 
     return df
 
@@ -78,26 +98,55 @@ def get_exams(clean_exams_df: pd.DataFrame) -> list[Exam]:
     return exams
 
 
-def main() -> list[Exam]:
-    """Main function to process exams.
+def get_proctors(clean_proctors_df: pd.DataFrame) -> list[Proctor]:
+    """Get a list of proctors.
+
+    Args:
+        clean_proctors_df (pd.DataFrame): The cleaned proctors dataframe.
+
+    Returns:
+        list[Proctor]: A list of Proctor objects.
+    """
+    proctors = []
+
+    for row in clean_proctors_df.itertuples():
+        proctors.append(
+            Proctor(
+                row.Name,
+                row.Email,
+                row.Total_Proctored_Before,
+                row.Proctor_Class,
+            )
+        )
+
+    return proctors
+
+
+def main() -> tuple[list[Exam], list[Proctor]]:
+    """Main function to process exams and proctors.
 
     Returns:
         list[Exam]: A list of Exam objects.
+        list[Exam]: A list of Proctor objects.
     """
-    # Read exams dataframe from Excel file
+    # Read exams and proctors dataframe from Excel files
     df_exams = pd.read_excel(INPUTS_DIR / YAML_CONFIG.exams_file)
+    df_proctors = pd.read_excel(INPUTS_DIR / YAML_CONFIG.proctors_file)
 
-    # Clean the exams dataframe
+    # Clean the exams and proctors dataframes
     cleaned_exams_df = clean_exams_df(df_exams)
+    cleaned_proctors_df = clean_proctors_df(df_proctors)
 
-    # Get the list of exams
+    # Get the list of exams and proctors
     exams = get_exams(cleaned_exams_df)
+    proctors = get_proctors(cleaned_proctors_df)
 
-    # Print the list of exams using rich library
+    # Print the list of exams and proctors using rich library
     rprint(exams)
+    rprint(proctors)
 
-    return exams
+    return exams, proctors
 
 
 if __name__ == "__main__":
-    exams = main()
+    exams, proctors = main()
