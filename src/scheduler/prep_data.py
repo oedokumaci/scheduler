@@ -21,9 +21,6 @@ class Parser:
         """
         Read the input Excel files and store the dataframes.
         """
-        if not self.exams_df or not self.proctors_df:
-            raise ValueError("Dataframes are not initialized.")
-
         self.exams_df = pd.read_excel(INPUTS_DIR / self.config.exams_file)
         self.proctors_df = pd.read_excel(INPUTS_DIR / self.config.proctors_file)
 
@@ -31,7 +28,7 @@ class Parser:
         """
         Clean the exams dataframe.
         """
-        if not self.exams_df or not self.proctors_df:
+        if self.exams_df is None or self.proctors_df is None:
             raise ValueError("Dataframes are not initialized.")
 
         # Replace blank spaces in column names with underscores
@@ -53,7 +50,7 @@ class Parser:
         """
         Clean the proctors dataframe.
         """
-        if not self.exams_df or not self.proctors_df:
+        if self.exams_df is None or self.proctors_df is None:
             raise ValueError("Dataframes are not initialized.")
 
         # Replace blank spaces in column names with underscores
@@ -74,7 +71,7 @@ class Parser:
         Returns:
             list[Exam]: A list of Exam objects.
         """
-        if not self.exams_df:
+        if self.exams_df is None:
             raise ValueError("Exams dataframe is not initialized.")
 
         exams = []
@@ -119,7 +116,7 @@ class Parser:
         Returns:
             list[Proctor]: A list of Proctor objects.
         """
-        if not self.proctors_df:
+        if self.proctors_df is None:
             raise ValueError("Proctors dataframe is not initialized.")
 
         proctors = []
