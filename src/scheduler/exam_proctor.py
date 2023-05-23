@@ -21,6 +21,8 @@ class Exam:
         self.time = time.strip()
         self.classroom = classroom.strip()
         self.instructor = instructor.strip()
+        self.number_of_proctors_needed: int = 0
+        self.requires_specific_proctor: None | Proctor = None
         self.proctors: list[Proctor] = []
 
     @property
@@ -87,8 +89,8 @@ class Exam:
         Returns:
             str: A string representation of the Exam object.
         """
-        return f"""EXAM: {self.title}, {self.block}, {self.classroom}, {self.instructor}
-ATTRIBUTES: 1st Year MA Exam = {self.is_first_year_masters_exam}, 2nd Year MA Exam = {self.is_second_year_masters_exam}, Requires PhD Proctor = {self.requires_phd_proctor}"""
+        return f"""EXAM: {self.title}, {self.block}, {self.classroom}, {self.instructor}, {self.number_of_proctors_needed}
+    ATTRIBUTES: 1st Year MA Exam = {self.is_first_year_masters_exam}, 2nd Year MA Exam = {self.is_second_year_masters_exam}, Requires PhD Proctor = {self.requires_phd_proctor}"""
 
 
 class Proctor:
@@ -109,6 +111,7 @@ class Proctor:
         self.total_proctored_before = total_proctored_before
         self.proctor_class = proctor_class
         self.unavailable: list[str] = []
+        self.not_preferred: list[str] = []
         self.duties: list[Exam] = []
 
     def __repr__(self) -> str:
@@ -118,4 +121,4 @@ class Proctor:
             str: A string representation of the Proctor object.
         """
         return f"""PROCTOR: {self.name}, {self.email}, {self.total_proctored_before}, {self.proctor_class}
-    ATTRIBUTES: Unavailable = {self.unavailable}, Duties = {self.duties}"""
+    ATTRIBUTES: Unavailable = {", ".join(self.unavailable)}, Duties = {", ".join([duty.title for duty in self.duties])}"""
