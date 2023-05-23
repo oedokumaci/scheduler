@@ -89,8 +89,15 @@ class Exam:
         Returns:
             str: A string representation of the Exam object.
         """
-        return f"""EXAM: {self.title}, {self.block}, {self.classroom}, {self.instructor}, {self.number_of_proctors_needed}
-    ATTRIBUTES: 1st Year MA Exam = {self.is_first_year_masters_exam}, 2nd Year MA Exam = {self.is_second_year_masters_exam}, Requires PhD Proctor = {self.requires_phd_proctor}"""
+        attributes = ", ".join(
+            f'{key}="{value}"' if isinstance(value, str) else f"{key}={value}"
+            for key, value in self.__dict__.items()
+            if key != "proctors"
+        )
+        attributes += f", is_first_year_masters_exam={self.is_first_year_masters_exam}, is_second_year_masters_exam={self.is_second_year_masters_exam}, requires_phd_proctor={self.requires_phd_proctor}"
+        proctor_names = [f'"{proctor.name}"' for proctor in self.proctors]
+        attributes += f', proctors=[{", ".join(proctor_names)}]'
+        return f"{self.__class__.__name__}({attributes})"
 
 
 class Proctor:
@@ -120,5 +127,12 @@ class Proctor:
         Returns:
             str: A string representation of the Proctor object.
         """
-        return f"""PROCTOR: {self.name}, {self.email}, {self.total_proctored_before}, {self.proctor_class}
-    ATTRIBUTES: Unavailable = {", ".join(self.unavailable)}, Duties = {", ".join([duty.title for duty in self.duties])}"""
+        attributes = ", ".join(
+            f'{key}="{value}"' if isinstance(value, str) else f"{key}={value}"
+            for key, value in self.__dict__.items()
+            if key != "duties"
+        )
+        attributes += (
+            f', duties=[{", ".join([str(exam.code) for exam in self.duties])}]'
+        )
+        return f"{self.__class__.__name__}({attributes})"
