@@ -149,7 +149,9 @@ class Parser:
 
 
 class Prepper:
-    def __init__(self, exams: list[Exam], proctors: list[Proctor]) -> None:
+    def __init__(
+        self, exams: list[Exam], proctors: list[Proctor], config: YAMLConfig
+    ) -> None:
         """
         Initialize the Prepper class.
 
@@ -159,6 +161,7 @@ class Prepper:
         """
         self.exams = exams
         self.proctors = proctors
+        self.config = config
 
     def auto_add_constraints(self) -> None:
         """
@@ -189,12 +192,40 @@ class Prepper:
             else:
                 exam.number_of_proctors_needed = 1
 
-    def prepare(self) -> None:
+    def manually_add_constraints(self) -> None:
+        df = pd.read_excel(INPUTS_DIR / self.config.proctors_file)
+        all_blocks = sorted(list({exam.block for exam in self.exams}))
+
+        for block in all_blocks:
+            for row in df[["Name", block]].itertuples():
+                proctor = [
+                    proctor for proctor in self.proctors if proctor.name == row.Name
+                ][0]
+                if row[2] == 1:
+                    proctor.unavailable.append(block)
+                elif row[2] == 2:
+                    proctor.not_preferred.append(block)
+
+    def manually_add_proctor_numbers(self) -> None:
+        df = pd.read_excel(INPUTS_DIR / self.config.exams_file_for_proctor_numbers)
+        for row in df.itertuples():
+            exam = [
+                exam
+                for exam in self.exams
+                if exam.title == row.Exam_Title and exam.classroom == row.Classroom
+            ][0]
+            exam.number_of_proctors_needed = row.Number_of_Proctors_Needed
+
+    def prepare(self, auto_add: bool = False) -> None:
         """
         Prepare the data for scheduling.
         """
-        self.auto_add_constraints()
-        self.auto_add_proctor_numbers()
+        if auto_add:
+            self.auto_add_constraints()
+            self.auto_add_proctor_numbers()
+        else:
+            self.manually_add_constraints()
+            self.manually_add_proctor_numbers()
 
     def produce_output_excels(self) -> None:
         """

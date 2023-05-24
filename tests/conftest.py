@@ -56,6 +56,7 @@ def yaml_config_instance() -> YAMLConfig:
         "log_file_name": "valid_logs.log",
         "exams_file": "valid_exams.xlsx",
         "proctors_file": "valid_proctors.xlsx",
+        "exams_file_for_proctor_numbers": "valid_exams_for_proctor_numbers.xlsx",
     }
     return YAMLConfig(**config)
 

@@ -19,6 +19,7 @@ class YAMLConfig(BaseModel):
     log_file_name: str
     exams_file: str
     proctors_file: str
+    exams_file_for_proctor_numbers: str
 
     # Define a validator to ensure the log_file_name is valid
     @validator("log_file_name")
@@ -91,6 +92,7 @@ class YAMLConfigDict(TypedDict):
     log_file_name: str
     exams_file: str
     proctors_file: str
+    exams_file_for_proctor_numbers: str
 
 
 def parse_and_validate_configs() -> YAMLConfig:
