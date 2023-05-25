@@ -234,12 +234,12 @@ class Prepper:
                 )
             exam.number_of_proctors_needed = row.Number_of_Proctors_Needed
 
-    def prepare(self, auto_add: bool = False) -> None:
+    def prepare(self, auto_add: bool) -> None:
         """
         Prepare the data for scheduling.
 
         Args:
-            auto_add (bool, optional): Whether to automatically add constraints and proctor numbers. Defaults to False.
+            auto_add (bool): Whether to automatically add constraints and proctor numbers.
         """
         if auto_add:
             self.auto_add_constraints()
