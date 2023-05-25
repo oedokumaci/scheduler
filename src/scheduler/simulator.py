@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from scheduler.exam_proctor import Exam, Proctor
 from scheduler.planner import Planner
+from scheduler.utils import timer_decorator
 
 
 class Simulator:
@@ -21,14 +22,16 @@ class Simulator:
         ] = {}
         self.fairness_results: dict[int, list[int]] = {}
 
+    @timer_decorator
     def simulate(self) -> None:
         """
         Simulate the scheduling process for multiple iterations.
         """
         self.planner.set_min_max_duties()
         self.planner.set_blocks()
+        logging.info("Starting Simulations...")
         for i in range(1, self.number_of_simulations + 1):
-            logging.info(f"Starting Simulation {i}...")
+            # logging.info(f"Starting Simulation {i}...")
             exit_code: int = self.planner.schedule(i)
             self.results[i] = (
                 exit_code,
@@ -36,9 +39,10 @@ class Simulator:
                 deepcopy(self.planner.proctors),
                 deepcopy(self.planner.blocks),
             )
-            logging.info(
-                f"Simulation {i} is completed with {'success' if exit_code == 0 else 'failure'}."
-            )
+            # logging.info(
+            #     f"Simulation {i} is completed with {'success' if exit_code == 0 else 'failure'}."
+            # )
+        logging.info("Simulations Completed.")
 
     def measure_fairness(self, sim_number: int) -> tuple[int, int]:
         """

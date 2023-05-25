@@ -57,11 +57,6 @@ class Planner:
                 self.blocks[exam.block] = []
             self.blocks[exam.block].append(exam)
 
-        logging.info("Blocks from most needed to least needed")
-        for block in self.ordered_blocks_keys():
-            for exam in self.blocks[block]:
-                logging.info(f"{exam.block}: {exam.title}")
-
     def ordered_blocks_keys(self, most_needed_to_least: bool = True) -> list[str]:
         """
         Get a list of block keys, ordered by:
@@ -145,9 +140,9 @@ class Planner:
                     available_proctors_for_block.add(proct)
                 total_proctors_needed_for_block += exam.number_of_proctors_needed
             if len(available_proctors_for_block) < total_proctors_needed_for_block:
-                logging.error(
-                    f"Try {try_number} failed! Not enough proctors for block {block}.\nAvailable proctors: {', '.join([proct.name for proct in available_proctors_for_block])}\nTotal number of Proctors needed: {total_proctors_needed_for_block}"
-                )
+                # logging.error(
+                #     f"Try {try_number} failed! Not enough proctors for block {block}.\nAvailable proctors: {', '.join([proct.name for proct in available_proctors_for_block])}\nTotal number of Proctors needed: {total_proctors_needed_for_block}"
+                # )
                 return 1
             for exam in self.blocks[block]:
                 available_proctors = self.get_available_proctors(
@@ -163,9 +158,9 @@ class Planner:
                     if len(proctor.duties) < self.min_duties
                 ]
                 if len(available_proctors) < exam.number_of_proctors_needed:
-                    logging.error(
-                        f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block} and classroom {exam.classroom}"
-                    )
+                    # logging.error(
+                    #     f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block} and classroom {exam.classroom}"
+                    # )
                     return 1
                 if len(min_not_reached) >= exam.number_of_proctors_needed:
                     # If there are enough proctors that have not reached the minimum number of duties, first fill with them
@@ -177,5 +172,5 @@ class Planner:
                 ):
                     proctor.duties.append(exam)
                     exam.proctors.append(proctor)
-        logging.info(f"Try {try_number} succeeded!")
+        # logging.info(f"Try {try_number} succeeded!")
         return 0
