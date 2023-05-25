@@ -46,20 +46,20 @@ class YAMLConfig(BaseModel):
             )
         return v
 
-    # Define a validator to ensure the exams_file and proctors_file are valid
-    @validator("exams_file", "proctors_file")
-    def exams_and_proctors_files_must_be_valid(cls, v: str) -> str:
-        """Validator to ensure the exams_file and proctors_file are valid.
+    # Define a validator to ensure the exams_file, proctors_file and exams_file_for_proctor_numbers are valid
+    @validator("exams_file", "proctors_file", "exams_file_for_proctor_numbers")
+    def file_must_be_valid(cls, v: str) -> str:
+        """Validator to ensure the exams_file, proctors_file and exams_file_for_proctor_numbers are valid.
 
         Args:
-            v (str): The exams_file or proctors_file value.
+            v (str): The exams_file, proctors_file or exams_file_for_proctor_numbers value.
 
         Raises:
-            ValueError: If exams_file or proctors_file starts with /.
-            ValueError: If exams_file or proctors_file is not a .xlsx file.
+            ValueError: If the file starts with /.
+            ValueError: If the file is not a .xlsx file.
 
         Returns:
-            str: The validated exams_file or proctors_file.
+            str: The validated exams_file, proctors_file or exams_file_for_proctor_numbers.
         """
         if v.startswith("/"):
             raise ValueError(f"{v!r} should not start with /, {v!r} starts with /")
