@@ -110,7 +110,12 @@ class Planner:
         """
         available_proctors = []
         for proctor in self.proctors:
-            if len(proctor.duties) > self.max_duties:
+            if (
+                len(proctor.duties)
+                > self.max_duties
+                + self.max_total_proctored_before
+                - proctor.total_proctored_before
+            ):
                 continue
             constraints = (
                 (proctor.unavailable + proctor.not_preferred).copy()
