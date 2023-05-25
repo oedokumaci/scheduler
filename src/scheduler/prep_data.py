@@ -234,6 +234,9 @@ class Prepper:
                 )
             exam.number_of_proctors_needed = row.Number_of_Proctors_Needed
 
+    def manually_add_specific_proctors(self) -> None:
+        pass
+
     def prepare(self, auto_add: bool) -> None:
         """
         Prepare the data for scheduling.
@@ -247,6 +250,7 @@ class Prepper:
         else:
             self.manually_add_constraints()
             self.manually_add_proctor_numbers()
+            self.manually_add_specific_proctors()
 
     def produce_output_excels(self) -> None:
         """
