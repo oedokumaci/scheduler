@@ -262,6 +262,7 @@ class Prepper:
                     "Exam should require exactly 1 proctor, select another exam"
                 )
                 continue
+            print("")
             for i, proctor in enumerate(self.proctors):
                 print(f"{i+1}. {proctor.name}")
             proctor_selection = int(input("Select a proctor from the above list: ")) - 1
@@ -270,6 +271,8 @@ class Prepper:
             user_input = (
                 input("Do you want to add more specific proctors? [Y/n]: ") or "Y"
             )
+            if user_input.lower() == "y":
+                print("")
 
     def prepare(self, auto_add: bool) -> None:
         """
