@@ -153,7 +153,6 @@ class Proctor:
             for key, value in self.__dict__.items()
             if key != "duties"
         )
-        attributes += (
-            f', duties=[{", ".join([str(exam.code) for exam in self.duties])}]'
-        )
+        duties_summary = [f'"{exam.title} | {exam.block}"' for exam in self.duties]
+        attributes += f', duties=[{", ".join(duties_summary)}]'
         return f"{self.__class__.__name__}({attributes})"
