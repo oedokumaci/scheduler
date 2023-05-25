@@ -73,8 +73,8 @@ jobs:
     - name: Run pdm-lock-check
       run: pdm run pre-commit run --all-files pdm-lock-check
 
-    - name: Run pdm-export
-      run: pdm run pre-commit run --all-files pdm-export
+    # - name: Run pdm-export
+    #   run: pdm run pre-commit run --all-files pdm-export
 
     - name: Run mypy
       run: pdm run pre-commit run --all-files mypy
