@@ -25,6 +25,10 @@ class Exam:
         self.requires_specific_proctor: None | Proctor = None
         self.proctors: list[Proctor] = []
 
+    def reset(self) -> None:
+        """Reset the Exam object to its initial state."""
+        self.proctors = []
+
     @property
     def code(self) -> int:
         """Extracts the 3-digit course code from the title.
@@ -125,6 +129,10 @@ class Proctor:
         self.unavailable: list[str] = []
         self.not_preferred: list[str] = []
         self.duties: list[Exam] = []
+
+    def reset(self) -> None:
+        """Reset the Proctor object to its initial state."""
+        self.duties = []
 
     def __repr__(self) -> str:
         """Return a string representation of the Proctor object.

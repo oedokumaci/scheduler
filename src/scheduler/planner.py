@@ -19,6 +19,12 @@ class Planner:
         self.max_duties: int = 0
         self.blocks: dict[str, list[Exam]] = {}
 
+    def reset_all(self) -> None:
+        for exam in self.exams:
+            exam.reset()
+        for proctor in self.proctors:
+            proctor.reset()
+
     def set_min_max_duties(self) -> None:
         """
         Calculate and set the minimum and maximum number of duties per proctor.
@@ -39,12 +45,13 @@ class Planner:
         # 2. Exams that require a PhD proctor
         # 3. Rest of the exams
         self.exams.sort(
-            key=lambda exam: exam.requires_specific_proctor.name
+            key=lambda exam: 1
             if exam.requires_specific_proctor
-            else False,
-            reverse=True,
+            else 2
+            if exam.requires_phd_proctor
+            else 3,
         )
-        self.exams.sort(key=lambda exam: exam.requires_phd_proctor, reverse=True)
+
         for exam in self.exams:
             if exam.block not in self.blocks:
                 self.blocks[exam.block] = []
@@ -121,6 +128,7 @@ class Planner:
         Args:
             try_number (int, optional): The number of the scheduling attempt. Defaults to 0.
         """
+        self.reset_all()
         self.set_min_max_duties()
         self.set_blocks()
         for block in self.ordered_blocks_keys():
@@ -139,7 +147,7 @@ class Planner:
                 ]
                 if len(available_proctors) < exam.number_of_proctors_needed:
                     logging.error(
-                        f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block}"
+                        f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block} and classroom {exam.classroom}"
                     )
                     return
                 if len(min_not_reached) >= exam.number_of_proctors_needed:
@@ -147,7 +155,7 @@ class Planner:
                     select_from = min_not_reached
                 else:
                     select_from = available_proctors
-                for proctor in random.choices(
+                for proctor in random.sample(
                     select_from, k=exam.number_of_proctors_needed
                 ):
                     proctor.duties.append(exam)
