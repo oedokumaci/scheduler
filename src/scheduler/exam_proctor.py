@@ -134,6 +134,14 @@ class Proctor:
         """Reset the Proctor object to its initial state."""
         self.duties = []
 
+    def not_preferred_satisfied(self) -> bool:
+        """Check if the proctor's not preferred list is satisfied.
+
+        Returns:
+            bool: True if the proctor's not preferred list is satisfied, False otherwise.
+        """
+        return all(exam.block not in self.not_preferred for exam in self.duties)
+
     def __repr__(self) -> str:
         """Return a string representation of the Proctor object.
 
