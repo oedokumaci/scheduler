@@ -235,7 +235,41 @@ class Prepper:
             exam.number_of_proctors_needed = row.Number_of_Proctors_Needed
 
     def manually_add_specific_proctors(self) -> None:
-        pass
+        """
+        Manually add specific proctors to exams.
+
+        This method prompts the user to input specific proctors for exams.
+        The user is presented with a list of exams and proctors to choose from.
+        The selected exam is updated with the specific proctor.
+
+        Note: Each exam should require exactly 1 proctor.
+
+        Returns:
+            None
+        """
+        user_input = (
+            input("Do you want to manually add specific proctors? [Y/n]: ") or "y"
+        )
+        while user_input.lower() == "y":
+            for i, exam in enumerate(self.exams):
+                print(
+                    f"{i+1}. {exam.title}, {exam.block}, {exam.classroom}, {exam.instructor}"
+                )
+            exam_selection = int(input("Select an exam from the above list: ")) - 1
+            exam = self.exams[exam_selection]
+            if exam.number_of_proctors_needed != 1:
+                logging.error(
+                    "Exam should require exactly 1 proctor, select another exam"
+                )
+                continue
+            for i, proctor in enumerate(self.proctors):
+                print(f"{i+1}. {proctor.name}")
+            proctor_selection = int(input("Select a proctor from the above list: ")) - 1
+            proctor = self.proctors[proctor_selection]
+            exam.requires_specific_proctor = proctor
+            user_input = (
+                input("Do you want to add more specific proctors? [Y/n]: ") or "Y"
+            )
 
     def prepare(self, auto_add: bool) -> None:
         """
@@ -243,6 +277,13 @@ class Prepper:
 
         Args:
             auto_add (bool): Whether to automatically add constraints and proctor numbers.
+
+        This method prepares the data for scheduling by adding constraints and proctor numbers.
+        If auto_add is True, it automatically adds constraints and proctor numbers using predefined rules.
+        If auto_add is False, it prompts the user to manually add constraints and proctor numbers.
+
+        Returns:
+            None
         """
         if auto_add:
             self.auto_add_constraints()

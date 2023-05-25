@@ -92,11 +92,16 @@ class Exam:
         attributes = ", ".join(
             f'{key}="{value}"' if isinstance(value, str) else f"{key}={value}"
             for key, value in self.__dict__.items()
-            if key != "proctors"
+            if key != "proctors" and key != "requires_specific_proctor"
         )
         attributes += f", is_first_year_masters_exam={self.is_first_year_masters_exam}, is_second_year_masters_exam={self.is_second_year_masters_exam}, requires_phd_proctor={self.requires_phd_proctor}"
         proctor_names = [f'"{proctor.name}"' for proctor in self.proctors]
         attributes += f', proctors=[{", ".join(proctor_names)}]'
+        attributes += (
+            f', requires_specific_proctor="{self.requires_specific_proctor.name}"'
+            if self.requires_specific_proctor is not None
+            else ""
+        )
         return f"{self.__class__.__name__}({attributes})"
 
 
