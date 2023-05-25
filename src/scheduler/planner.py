@@ -20,20 +20,24 @@ class Planner:
         self.blocks: dict[str, list[Exam]] = {}
 
     def set_min_max_duties(self) -> None:
+        """
+        Calculate and set the minimum and maximum number of duties per proctor.
+        """
         total_proctors_needed = sum(
             [exam.number_of_proctors_needed for exam in self.exams]
         )
         self.min_duties = total_proctors_needed // len(self.proctors)
         self.max_duties = self.min_duties + 1
+        logging.info(f"min_duties: {self.min_duties}, max_duties: {self.max_duties}")
 
     def set_blocks(self) -> None:
         """
-        Set the blocks attribute.
+        Set the blocks attribute and sort exams within blocks based on priority.
         """
-        # the order in list should be as follows:
-        # 1. exam that requires a specific proctor
-        # 2. exam that requires a PhD proctor
-        # 3. rest of the exams
+        # The order in list of exams for each block should be as follows:
+        # 1. Exams that require a specific proctor
+        # 2. Exams that require a PhD proctor
+        # 3. Rest of the exams
         self.exams.sort(
             key=lambda exam: exam.requires_specific_proctor.name
             if exam.requires_specific_proctor
@@ -45,6 +49,11 @@ class Planner:
             if exam.block not in self.blocks:
                 self.blocks[exam.block] = []
             self.blocks[exam.block].append(exam)
+
+        logging.info("Blocks from most needed to least needed")
+        for block in self.ordered_blocks_keys():
+            for exam in self.blocks[block]:
+                logging.info(f"{exam.block}: {exam.title}")
 
     def ordered_blocks_keys(self, most_needed_to_least: bool = True) -> list[str]:
         """
@@ -73,7 +82,7 @@ class Planner:
 
         Args:
             exam (Exam): An Exam object.
-            all_constraints (bool, optional): Whether to use all constraints. Defaults to False.
+            all_constraints (bool, optional): Whether to use all constraints. Defaults to True.
 
         Returns:
             list[Proctor]: A list of available Proctor objects.
@@ -94,7 +103,9 @@ class Planner:
                         available_proctors.append(proctor)
                     else:
                         continue
-                if exam.requires_phd_proctor:
+                elif (
+                    exam.requires_phd_proctor
+                ):  # this is elif not if assuming that requires_specific_proctor exams need only 1 proctor
                     if proctor.proctor_class == 3:
                         available_proctors.append(proctor)
                     else:
@@ -103,9 +114,12 @@ class Planner:
                     available_proctors.append(proctor)
         return available_proctors
 
-    def schedule(self) -> None:
+    def schedule(self, try_number: int = 0) -> None:
         """
-        Schedule exams.
+        Schedule exams based on proctor availability.
+
+        Args:
+            try_number (int, optional): The number of the scheduling attempt. Defaults to 0.
         """
         self.set_min_max_duties()
         self.set_blocks()
@@ -125,10 +139,11 @@ class Planner:
                 ]
                 if len(available_proctors) < exam.number_of_proctors_needed:
                     logging.error(
-                        f"Not enough proctors for {exam.title} in block {exam.block}"
+                        f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block}"
                     )
                     return
                 if len(min_not_reached) >= exam.number_of_proctors_needed:
+                    # If there are enough proctors that have not reached the minimum number of duties, first fill with them
                     select_from = min_not_reached
                 else:
                     select_from = available_proctors
