@@ -112,7 +112,7 @@ class Simulator:
             ),
         )
 
-    def report_fairness(self) -> None:
+    def report_fairness(self, first_n: int = 20) -> None:
         """
         Report the fairness measures for all simulations.
         """
@@ -122,7 +122,7 @@ class Simulator:
         logging.info(
             f"{'Simulation Number':<19}{'Difference':<13}{'Weak Constraint Satisfaction':<27}"
         )
-        for sim_number in ordered_sim_numbers:
+        for sim_number in ordered_sim_numbers[:first_n]:
             diff = self.fairness_results[sim_number][0]
             constraint_satisfaction = self.fairness_results[sim_number][1]
             logging.info(f"{sim_number:<19}{diff:<13}{constraint_satisfaction:<27}")
