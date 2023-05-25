@@ -1,6 +1,7 @@
 """Command line application module."""
 
 import typer
+from rich import print as rprint
 
 from scheduler.config import YAML_CONFIG
 from scheduler.path import LOGS_DIR
@@ -21,6 +22,9 @@ def main(
     log_file_name: str = log_file_name_argument, override: bool = override_option
 ) -> None:
     """CLI for scheduler."""
+    from scheduler.planner import Planner
+    from scheduler.prep_data import Parser, Prepper
+    from scheduler.simulator import Simulator
 
     # Check if log file exists, if so ask to overwrite
     log_file = LOGS_DIR / log_file_name
@@ -30,6 +34,30 @@ def main(
     # Initialize logger
     init_logger(log_file_name)
 
+    parser = Parser(YAML_CONFIG)
+    prepper = Prepper(*parser.parse(), YAML_CONFIG)
+    prepper.prepare(auto_add=False)
+    planner = Planner(prepper.exams, prepper.proctors)
+    simulator = Simulator(planner, 5000)
+    simulator.simulate()
+    simulator.measure_fairness_all()
+    simulator.report_fairness()
+    ordered_by_fairness = simulator.order_by_fairness()
+
+    _, _, proctors, blocks = simulator.results[ordered_by_fairness[0]]
+    rprint(blocks)
+
+    for proctor in proctors:
+        rprint(proctor)
+
+    total_duties = {
+        proctor.name: len(proctor.duties) + proctor.total_proctored_before
+        for proctor in proctors
+    }
+    sorted_duties = sorted(total_duties.items(), key=lambda item: item[1])
+    for proct, duties in sorted_duties:
+        print(f"{proct}: {duties}")
+
     # Print log file path
     print("")
-    print(f"logs are saved to {log_file.resolve()}")
+    rprint(f"logs are saved to {log_file.resolve()}")
