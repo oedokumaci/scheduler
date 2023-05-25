@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 
 from scheduler.config import YAMLConfig
@@ -11,7 +13,7 @@ class Parser:
         Initialize the Parser class.
 
         Args:
-            config (YAML_CONFIG): The YAML configuration object.
+            config (YAMLConfig): The YAML configuration object.
         """
         self.config = config
         self.exams_df: None | pd.DataFrame = None
@@ -23,6 +25,7 @@ class Parser:
         """
         self.exams_df = pd.read_excel(INPUTS_DIR / self.config.exams_file)
         self.proctors_df = pd.read_excel(INPUTS_DIR / self.config.proctors_file)
+        logging.info("Successfully read input Excel files.")
 
     def clean_exams_df(self) -> None:
         """
@@ -92,6 +95,7 @@ class Parser:
                     )
                 last_exam = row.Exam_Title
             except AttributeError as e:
+                # If there are multiple instructors making Classrooms is NaN
                 if last_exam == row.Exam_Title:
                     # Find all exams with the same title, date, and time
                     find_all_exams = [
@@ -193,32 +197,49 @@ class Prepper:
                 exam.number_of_proctors_needed = 1
 
     def manually_add_constraints(self) -> None:
+        """
+        Manually add constraints to proctors using input Excel file.
+        """
         df = pd.read_excel(INPUTS_DIR / self.config.proctors_file)
         all_blocks = sorted(list({exam.block for exam in self.exams}))
 
         for block in all_blocks:
             for row in df[["Name", block]].itertuples():
-                proctor = [
-                    proctor for proctor in self.proctors if proctor.name == row.Name
-                ][0]
+                for proct in self.proctors:
+                    if proct.name == row.Name:
+                        proctor = proct
+                        break
+                else:
+                    raise ValueError(
+                        f"Proctor {row.Name} not found, check proctors file for a typo."
+                    )
                 if row[2] == 1:
                     proctor.unavailable.append(block)
                 elif row[2] == 2:
                     proctor.not_preferred.append(block)
 
     def manually_add_proctor_numbers(self) -> None:
+        """
+        Manually add proctor numbers to exams using input Excel file.
+        """
         df = pd.read_excel(INPUTS_DIR / self.config.exams_file_for_proctor_numbers)
         for row in df.itertuples():
-            exam = [
-                exam
-                for exam in self.exams
-                if exam.title == row.Exam_Title and exam.classroom == row.Classroom
-            ][0]
+            for exa in self.exams:
+                if exa.title == row.Exam_Title and exa.classroom == row.Classroom:
+                    exam = exa
+                    break
+            else:
+                raise ValueError(
+                    f"Exam {row.Exam_Title} in {row.Classroom} not found, check exams file for a typo."
+                )
             exam.number_of_proctors_needed = row.Number_of_Proctors_Needed
 
     def prepare(self, auto_add: bool = False) -> None:
         """
         Prepare the data for scheduling.
+
+        Args:
+            auto_add (bool, optional): Whether to automatically add constraints and proctor numbers. Defaults to False.
         """
         if auto_add:
             self.auto_add_constraints()
@@ -230,9 +251,6 @@ class Prepper:
     def produce_output_excels(self) -> None:
         """
         Produce output excels containing the scheduled exams and proctors.
-
-        Returns:
-            tuple[pd.DataFrame, pd.DataFrame]: A tuple of dataframes for exams and proctors.
         """
         # Create a dataframe for exams
         df_exams = pd.DataFrame(
