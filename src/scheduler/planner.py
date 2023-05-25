@@ -1,5 +1,6 @@
 import logging
 import random
+from functools import cached_property
 
 from scheduler.exam_proctor import Exam, Proctor
 
@@ -18,6 +19,16 @@ class Planner:
         self.min_duties: int = 0
         self.max_duties: int = 0
         self.blocks: dict[str, list[Exam]] = {}
+
+    @cached_property
+    def max_total_proctored_before(self) -> int:
+        """
+        Get the maximum number of duties proctors have had before the scheduling process.
+
+        Returns:
+            int: The maximum number of duties proctors have had before the scheduling process.
+        """
+        return max([proctor.total_proctored_before for proctor in self.proctors])
 
     def reset_all(self) -> None:
         for exam in self.exams:
@@ -155,7 +166,10 @@ class Planner:
                 min_not_reached = [
                     proctor
                     for proctor in available_proctors
-                    if len(proctor.duties) < self.min_duties
+                    if len(proctor.duties)
+                    < self.min_duties
+                    + self.max_total_proctored_before
+                    - proctor.total_proctored_before
                 ]
                 if len(available_proctors) < exam.number_of_proctors_needed:
                     # logging.error(
