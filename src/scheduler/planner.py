@@ -64,7 +64,9 @@ class Planner:
 
     def ordered_blocks_keys(self, most_needed_to_least: bool = True) -> list[str]:
         """
-        Get a list of block keys, ordered by the number of proctors needed for the block.
+        Get a list of block keys, ordered by:
+        1. the number of exams that require a specific proctor,
+        2. the number of proctors needed for the block.
 
         Args:
             most_needed_to_least (bool, optional): Whether to order the blocks from most needed to least needed. Defaults to True.
@@ -73,9 +75,15 @@ class Planner:
             list[str]: A list of block keys.
         """
         blocks_keys = list(self.blocks.keys())
+        number_of_proctors = len(self.proctors)
         blocks_keys.sort(
             key=lambda block: sum(
-                [exam.number_of_proctors_needed for exam in self.blocks[block]]
+                [
+                    exam.number_of_proctors_needed
+                    if not exam.requires_specific_proctor
+                    else number_of_proctors
+                    for exam in self.blocks[block]
+                ]
             ),
             reverse=most_needed_to_least,
         )
@@ -99,14 +107,14 @@ class Planner:
             if len(proctor.duties) > self.max_duties:
                 continue
             constraints = (
-                proctor.unavailable + proctor.not_preferred
+                (proctor.unavailable + proctor.not_preferred).copy()
                 if all_constraints
-                else proctor.unavailable
+                else proctor.unavailable.copy()
             )
             constraints.extend([duty.block for duty in proctor.duties])
             if exam.block not in constraints:
                 if exam.requires_specific_proctor is not None:
-                    if proctor.name == exam.requires_specific_proctor:
+                    if proctor.name == exam.requires_specific_proctor.name:
                         available_proctors.append(proctor)
                     else:
                         continue
@@ -121,7 +129,7 @@ class Planner:
                     available_proctors.append(proctor)
         return available_proctors
 
-    def schedule(self, try_number: int = 0) -> None:
+    def schedule(self, try_number: int = 1) -> int:
         """
         Schedule exams based on proctor availability.
 
@@ -129,9 +137,18 @@ class Planner:
             try_number (int, optional): The number of the scheduling attempt. Defaults to 0.
         """
         self.reset_all()
-        self.set_min_max_duties()
-        self.set_blocks()
         for block in self.ordered_blocks_keys():
+            available_proctors_for_block = set()
+            total_proctors_needed_for_block = 0
+            for exam in self.blocks[block]:
+                for proct in self.get_available_proctors(exam, all_constraints=False):
+                    available_proctors_for_block.add(proct)
+                total_proctors_needed_for_block += exam.number_of_proctors_needed
+            if len(available_proctors_for_block) < total_proctors_needed_for_block:
+                logging.error(
+                    f"Try {try_number} failed! Not enough proctors for block {block}.\nAvailable proctors: {', '.join([proct.name for proct in available_proctors_for_block])}\nTotal number of Proctors needed: {total_proctors_needed_for_block}"
+                )
+                return 1
             for exam in self.blocks[block]:
                 available_proctors = self.get_available_proctors(
                     exam, all_constraints=True
@@ -149,7 +166,7 @@ class Planner:
                     logging.error(
                         f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block} and classroom {exam.classroom}"
                     )
-                    return
+                    return 1
                 if len(min_not_reached) >= exam.number_of_proctors_needed:
                     # If there are enough proctors that have not reached the minimum number of duties, first fill with them
                     select_from = min_not_reached
@@ -160,3 +177,5 @@ class Planner:
                 ):
                     proctor.duties.append(exam)
                     exam.proctors.append(proctor)
+        logging.info(f"Try {try_number} succeeded!")
+        return 0
