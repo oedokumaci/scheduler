@@ -22,7 +22,7 @@ class Exam:
         self.classroom = classroom.strip()
         self.instructor = instructor.strip()
         self.number_of_proctors_needed: int = 0
-        self.requires_specific_proctor: None | Proctor = None
+        self.requires_specific_proctor: list[Proctor] = []
         self.proctors: list[Proctor] = []
 
     def reset(self) -> None:
@@ -101,10 +101,11 @@ class Exam:
         attributes += f", is_first_year_masters_exam={self.is_first_year_masters_exam}, is_second_year_masters_exam={self.is_second_year_masters_exam}, requires_phd_proctor={self.requires_phd_proctor}"
         proctor_names = [f'"{proctor.name}"' for proctor in self.proctors]
         attributes += f', proctors=[{", ".join(proctor_names)}]'
+        specific_proctor_names = [
+            f'"{proctor.name}"' for proctor in self.requires_specific_proctor
+        ]
         attributes += (
-            f', requires_specific_proctor="{self.requires_specific_proctor.name}"'
-            if self.requires_specific_proctor is not None
-            else ""
+            f', requires_specific_proctor==[{", ".join(specific_proctor_names)}]'
         )
         return f"{self.__class__.__name__}({attributes})"
 

@@ -56,11 +56,12 @@ class Planner:
         # 2. Exams that require a PhD proctor
         # 3. Rest of the exams
         self.exams.sort(
-            key=lambda exam: 1
-            if exam.requires_specific_proctor
-            else 2
+            key=lambda exam: len(exam.requires_specific_proctor)
+            if len(exam.requires_specific_proctor) > 0
+            else 0.5
             if exam.requires_phd_proctor
-            else 3,
+            else 0,
+            reverse=True,
         )
 
         for exam in self.exams:
@@ -86,8 +87,8 @@ class Planner:
             key=lambda block: sum(
                 [
                     exam.number_of_proctors_needed
-                    if not exam.requires_specific_proctor
-                    else number_of_proctors
+                    if len(exam.requires_specific_proctor) == 0
+                    else number_of_proctors + len(exam.requires_specific_proctor)
                     for exam in self.blocks[block]
                 ]
             ),
@@ -124,14 +125,12 @@ class Planner:
             )
             constraints.extend([duty.block for duty in proctor.duties])
             if exam.block not in constraints:
-                if exam.requires_specific_proctor is not None:
-                    if proctor.name == exam.requires_specific_proctor.name:
+                if len(exam.requires_specific_proctor) > 0:
+                    if proctor in exam.requires_specific_proctor:
                         available_proctors.append(proctor)
                     else:
                         continue
-                elif (
-                    exam.requires_phd_proctor
-                ):  # this is elif not if assuming that requires_specific_proctor exams need only 1 proctor
+                elif exam.requires_phd_proctor:
                     if proctor.proctor_class == 3:
                         available_proctors.append(proctor)
                     else:

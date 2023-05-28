@@ -236,43 +236,43 @@ class Prepper:
 
     def manually_add_specific_proctors(self) -> None:
         """
-        Manually add specific proctors to exams.
-
-        This method prompts the user to input specific proctors for exams.
-        The user is presented with a list of exams and proctors to choose from.
-        The selected exam is updated with the specific proctor.
-
-        Note: Each exam should require exactly 1 proctor.
+        Manually add specific proctors to exams using input Excel file.
 
         Returns:
             None
         """
-        user_input = (
-            input("Do you want to manually add specific proctors? [Y/n]: ") or "y"
-        )
-        while user_input.lower() == "y":
-            for i, exam in enumerate(self.exams):
-                print(
-                    f"{i+1}. {exam.title}, {exam.block}, {exam.classroom}, {exam.instructor}"
-                )
-            exam_selection = int(input("Select an exam from the above list: ")) - 1
-            exam = self.exams[exam_selection]
-            if exam.number_of_proctors_needed != 1:
-                logging.error(
-                    "Exam should require exactly 1 proctor, select another exam"
-                )
+        df = pd.read_excel(INPUTS_DIR / self.config.exams_file_for_proctor_numbers)
+        df["Requires_Specific_Proctor"] = df["Requires_Specific_Proctor"].astype(str)
+        for row in df.itertuples():
+            if row.Requires_Specific_Proctor != "nan":
+                row_proctors = row.Requires_Specific_Proctor.split(", ")
+            else:
                 continue
-            print("")
-            for i, proctor in enumerate(self.proctors):
-                print(f"{i+1}. {proctor.name}")
-            proctor_selection = int(input("Select a proctor from the above list: ")) - 1
-            proctor = self.proctors[proctor_selection]
-            exam.requires_specific_proctor = proctor
-            user_input = (
-                input("Do you want to add more specific proctors? [Y/n]: ") or "Y"
-            )
-            if user_input.lower() == "y":
-                print("")
+            for exa in self.exams:
+                if exa.title == row.Exam_Title and exa.classroom == row.Classroom:
+                    exam = exa
+                    break
+            else:
+                raise ValueError(
+                    f"Exam {row.Exam_Title} in {row.Classroom} not found, check exams file for a typo."
+                )
+            to_add: list[Proctor] = []
+            for proctor in self.proctors:
+                if proctor.name in row_proctors:
+                    to_add.append(proctor)
+            if len(to_add) != exam.number_of_proctors_needed:
+                raise ValueError(
+                    f"Number of proctors needed for {exam.title} in {exam.classroom} does not match the number of specific proctors provided."
+                )
+            elif len(to_add) != len(row_proctors):
+                raise ValueError(
+                    f"Number of proctors needed for {exam.title} in {exam.classroom} does not match the number of specific proctors provided."
+                )
+            else:
+                logging.info(
+                    f"Adding specific proctors to {exam.title} in {exam.classroom}: {', '.join(row_proctors)}"
+                )
+                exam.requires_specific_proctor = to_add
 
     def prepare(self, auto_add: bool) -> None:
         """
