@@ -100,6 +100,6 @@ class Simulator:
             list[int]: The ordered list of simulation numbers.
         """
         return sorted(
-            self.fairness_results,
-            key=lambda sim_number: min(self.fairness_results[sim_number]),
+            self.fairness_results.keys(),
+            key=lambda sim_number: self.fairness_results[sim_number],
         )
