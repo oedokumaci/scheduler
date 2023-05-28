@@ -124,6 +124,9 @@ class Planner:
                 else proctor.unavailable.copy()
             )
             constraints.extend([duty.block for duty in proctor.duties])
+            # skip same day exams, TODO: skip some students
+            if exam.date in [constraint[:10] for constraint in constraints]:
+                continue
             if exam.block not in constraints:
                 if len(exam.requires_specific_proctor) > 0:
                     if proctor in exam.requires_specific_proctor:
@@ -155,9 +158,9 @@ class Planner:
                     available_proctors_for_block.add(proct)
                 total_proctors_needed_for_block += exam.number_of_proctors_needed
             if len(available_proctors_for_block) < total_proctors_needed_for_block:
-                # logging.error(
-                #     f"Try {try_number} failed! Not enough proctors for block {block}.\nAvailable proctors: {', '.join([proct.name for proct in available_proctors_for_block])}\nTotal number of Proctors needed: {total_proctors_needed_for_block}"
-                # )
+                logging.error(
+                    f"Try {try_number} failed! Not enough proctors for block {block}.\nAvailable proctors: {', '.join([proct.name for proct in available_proctors_for_block])}\nTotal number of Proctors needed: {total_proctors_needed_for_block}"
+                )
                 return 1
             for exam in self.blocks[block]:
                 available_proctors = self.get_available_proctors(
@@ -176,9 +179,9 @@ class Planner:
                     - proctor.total_proctored_before
                 ]
                 if len(available_proctors) < exam.number_of_proctors_needed:
-                    # logging.error(
-                    #     f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block} and classroom {exam.classroom}"
-                    # )
+                    logging.error(
+                        f"Try {try_number} failed! Not enough proctors for {exam.title} in block {exam.block} and classroom {exam.classroom}"
+                    )
                     return 1
                 if len(min_not_reached) >= exam.number_of_proctors_needed:
                     # If there are enough proctors that have not reached the minimum number of duties, first fill with them
