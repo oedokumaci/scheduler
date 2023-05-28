@@ -104,3 +104,22 @@ def timer_decorator(func: Callable[P, R]) -> Callable[P, R]:
         return result
 
     return wrapper
+
+
+def standard_deviation(values: list[int]) -> float:
+    """Calculate the standard deviation of a list of values.
+
+    Args:
+        values (list[int]): The list of values.
+
+    Returns:
+        float: The standard deviation of the list of values.
+    """
+    # Calculate the mean of the values
+    mean: float = sum(values) / len(values)
+
+    # Calculate the variance of the values
+    variance: float = sum((value - mean) ** 2 for value in values) / len(values)
+
+    # Return the square root of the variance
+    return variance ** (1 / 2)

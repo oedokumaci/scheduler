@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from scheduler.exam_proctor import Exam, Proctor
 from scheduler.planner import Planner
-from scheduler.utils import timer_decorator
+from scheduler.utils import standard_deviation, timer_decorator
 
 
 class Simulator:
@@ -20,7 +20,7 @@ class Simulator:
         self.results: dict[
             int, tuple[int, list[Exam], list[Proctor], dict[str, list[Exam]]]
         ] = {}
-        self.fairness_results: dict[int, list[int]] = {}
+        self.fairness_results: dict[int, tuple[int, float, float, int, int]] = {}
 
     @timer_decorator
     def simulate(self) -> None:
@@ -44,7 +44,7 @@ class Simulator:
             # )
         logging.info("Simulations Completed.")
 
-    def measure_fairness(self, sim_number: int) -> tuple[int, int]:
+    def measure_fairness(self, sim_number: int) -> tuple[int, float, float, int, int]:
         """
         Measure the fairness of a simulation.
 
@@ -52,45 +52,45 @@ class Simulator:
             sim_number (int): The simulation number.
 
         Returns:
-            tuple[int, int]: The fairness measures (diff, weak_constraint_satisfaction).
+            tuple[int, float, float, int, int]: Fairness measures, using simulation number as tie breaker.
         """
+        failure: int = 0
         if self.results[sim_number][0] != 0:
-            return -1, -1
+            failure = 1
+
         proctors: list[Proctor] = self.results[sim_number][2]
-
-        min_total_proctor_duties: int = min(
+        total_duties = [
             proctor.total_proctored_before + len(proctor.duties) for proctor in proctors
-        )
-        max_total_proctor_duties: int = max(
-            proctor.total_proctored_before + len(proctor.duties) for proctor in proctors
-        )
-        diff: int = max_total_proctor_duties - min_total_proctor_duties
+        ]
+        standard_deviation_of_total_duties = standard_deviation(total_duties)
 
-        weak_constraint_satisfaction: int
-        if all(proctor.not_preferred_satisfied() for proctor in proctors):
-            weak_constraint_satisfaction = len(proctors)
-        elif all(
-            proctor.not_preferred_satisfied()
-            for proctor in proctors
-            if proctor.proctor_class == 1
-        ):
-            weak_constraint_satisfaction = len(proctors) - 1
-        else:
-            weak_constraint_satisfaction = sum(
-                proctor.not_preferred_satisfied() for proctor in proctors
-            )
+        first_year_total_duties = [
+            proctor.total_proctored_before + len(proctor.duties)
+            for proctor in filter(lambda x: x.proctor_class == 1, proctors)
+        ]
+        standard_deviation_of_first_year_total_duties = standard_deviation(
+            first_year_total_duties
+        )
 
-        return diff, weak_constraint_satisfaction
+        weak_constraints_not_satisfied = sum(
+            not proctor.not_preferred_satisfied() for proctor in proctors
+        )
+
+        return (
+            failure,
+            standard_deviation_of_total_duties,
+            standard_deviation_of_first_year_total_duties,
+            weak_constraints_not_satisfied,
+            sim_number,
+        )
 
     def measure_fairness_all(self) -> None:
         """
         Measure the fairness of all simulations.
         """
         for sim_number in self.results:
-            diff, weak_constraint_satisfaction = self.measure_fairness(sim_number)
-            if diff == -1 and weak_constraint_satisfaction == -1:
-                continue
-            self.fairness_results[sim_number] = [diff, weak_constraint_satisfaction]
+            fairness_measure = self.measure_fairness(sim_number)
+            self.fairness_results[sim_number] = fairness_measure
 
     def order_by_fairness(self) -> list[int]:
         """
@@ -101,28 +101,5 @@ class Simulator:
         """
         return sorted(
             self.fairness_results,
-            key=lambda sim_number: (
-                self.fairness_results[sim_number][
-                    0
-                ],  # Sort by smallest diff (ascending)
-                -self.fairness_results[sim_number][
-                    1
-                ],  # Sort by higher weak_constraint_satisfaction (descending)
-                sim_number,  # Sort by simulation number (ascending) as a tie-breaker
-            ),
+            key=lambda sim_number: min(self.fairness_results[sim_number]),
         )
-
-    def report_fairness(self, first_n: int = 20) -> None:
-        """
-        Report the fairness measures for all simulations.
-        """
-        self.measure_fairness_all()
-        logging.info(f"Number of Proctors: {len(self.planner.proctors)}")
-        ordered_sim_numbers: list[int] = self.order_by_fairness()
-        logging.info(
-            f"{'Simulation Number':<19}{'Difference':<13}{'Weak Constraint Satisfaction':<27}"
-        )
-        for sim_number in ordered_sim_numbers[:first_n]:
-            diff = self.fairness_results[sim_number][0]
-            constraint_satisfaction = self.fairness_results[sim_number][1]
-            logging.info(f"{sim_number:<19}{diff:<13}{constraint_satisfaction:<27}")
