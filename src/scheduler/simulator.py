@@ -20,7 +20,7 @@ class Simulator:
         self.results: dict[
             int, tuple[int, list[Exam], list[Proctor], dict[str, list[Exam]]]
         ] = {}
-        self.fairness_results: dict[int, tuple[int, float, float, int, int]] = {}
+        self.fairness_results: dict[int, tuple[int, int, float, float, int, int]] = {}
 
     @timer_decorator
     def simulate(self) -> None:
@@ -44,7 +44,9 @@ class Simulator:
             # )
         logging.info("Simulations Completed.")
 
-    def measure_fairness(self, sim_number: int) -> tuple[int, float, float, int, int]:
+    def measure_fairness(
+        self, sim_number: int
+    ) -> tuple[int, int, float, float, int, int]:
         """
         Measure the fairness of a simulation.
 
@@ -52,7 +54,7 @@ class Simulator:
             sim_number (int): The simulation number.
 
         Returns:
-            tuple[int, float, float, int, int]: Fairness measures, using simulation number as tie breaker.
+            tuple[int, int, float, float, int, int]: Fairness measures, using simulation number as tie breaker.
         """
         failure: int = 0
         if self.results[sim_number][0] != 0:
@@ -78,8 +80,9 @@ class Simulator:
 
         return (
             failure,
-            standard_deviation_of_total_duties,
+            max(total_duties) - min(total_duties),
             standard_deviation_of_first_year_total_duties,
+            standard_deviation_of_total_duties,
             weak_constraints_not_satisfied,
             sim_number,
         )
