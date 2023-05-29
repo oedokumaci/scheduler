@@ -124,9 +124,10 @@ class Planner:
                 else proctor.unavailable.copy()
             )
             constraints.extend([duty.block for duty in proctor.duties])
-            # skip same day exams, TODO: skip some students
-            if exam.date in [constraint[:10] for constraint in constraints]:
-                continue
+            # skip same day exams
+            # if proctor.proctor_class == 1:
+            #     if exam.date in [constraint[:10] for constraint in constraints]:
+            #         continue
             if exam.block not in constraints:
                 if len(exam.requires_specific_proctor) > 0:
                     if proctor in exam.requires_specific_proctor:
