@@ -15,11 +15,14 @@ log_file_name_argument = typer.Argument(
     help="Name of the log file. Default can be changed in config.yaml.",
 )
 override_option = typer.Option(False, help="Override the log file if it exists.")
+number_of_simulations_argument = typer.Argument(1000, help="Number of simulations.")
 
 
 @app.command()
 def main(
-    log_file_name: str = log_file_name_argument, override: bool = override_option
+    log_file_name: str = log_file_name_argument,
+    override: bool = override_option,
+    number_of_simulations: int = number_of_simulations_argument,
 ) -> None:
     """CLI for scheduler."""
     from scheduler.planner import Planner
@@ -37,11 +40,12 @@ def main(
     parser = Parser(YAML_CONFIG)
     prepper = Prepper(*parser.parse(), YAML_CONFIG)
     prepper.prepare(auto_add=False)
+
     planner = Planner(prepper.exams, prepper.proctors)
-    simulator = Simulator(planner, 5000)
+    simulator = Simulator(planner, number_of_simulations)
+
     simulator.simulate()
     simulator.measure_fairness_all()
-    simulator.report_fairness()
     ordered_by_fairness = simulator.order_by_fairness()
 
     _, _, proctors, blocks = simulator.results[ordered_by_fairness[0]]
