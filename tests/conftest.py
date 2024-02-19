@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 from typer.testing import CliRunner, Result

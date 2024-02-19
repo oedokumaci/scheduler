@@ -2,9 +2,10 @@
 
 import logging
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from time import time
-from typing import Callable, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 from scheduler.path import LOGS_DIR
 

@@ -1,5 +1,3 @@
-from typing import Type
-
 import pytest
 
 from scheduler.config import YAMLConfig
@@ -30,7 +28,7 @@ def test_yaml_config_instance(yaml_config_instance: YAMLConfig) -> None:
 def test_log_file_name_validation(
     yaml_config_instance: YAMLConfig,
     log_file_name: str,
-    expected: str | Type[Exception],
+    expected: str | type[Exception],
 ) -> None:
     """Test if log_file_name is validated correctly.
 

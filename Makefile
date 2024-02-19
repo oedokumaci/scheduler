@@ -1,4 +1,4 @@
-.PHONY: help vscode-settings setup run project-help test pre-commit clean
+.PHONY: help vscode-settings setup update-dev update-user run project-help test pre-commit purge-logs clean
 
 help:  ## Show this help message for each Makefile recipe
 ifeq ($(OS),Windows_NT)
@@ -10,25 +10,30 @@ endif
 setup:  ## Setup project
 	pdm install
 	pdm run pre-commit install
+	make test
+
+update-dev:  ## Update project dependencies for development
+	pdm update
+	pdm run pre-commit autoupdate
+	make test
+
+update-user:  ## Download latest project version and dependencies for user
+	git pull
+	pdm sync
+	make test
 
 vscode-settings:  ## Generate VSCode settings file
 	@mkdir -p .vscode
 ifeq ($(OS),Windows_NT)
 	@echo { > .vscode/settings.json
-	@echo "    \"python.linting.enabled\": true," >> .vscode/settings.json
-	@echo "    \"python.linting.pylintEnabled\": false," >> .vscode/settings.json
-	@echo "    \"python.linting.flake8Enabled\": true," >> .vscode/settings.json
-	@echo "    \"python.linting.flake8Args\": [\"--max-line-length=88\", \"--select=C,E,F,W,B\", \"--extend-ignore=B009,E203,E501,W503\"]," >> .vscode/settings.json
+	@echo "    \"flake8.args\": [\"--max-line-length=88\", \"--select=C,E,F,W,B\", \"--extend-ignore=B009,E203,E501,W503\"]," >> .vscode/settings.json
 	@echo "    \"python.autoComplete.extraPaths\": [\".venv/Lib/site-packages\"]," >> .vscode/settings.json
 	@echo "    \"python.analysis.extraPaths\": [\".venv/Lib/site-packages\"]," >> .vscode/settings.json
 	@echo "    \"python.testing.pytestPath\": \".venv/Scripts/pytest\"" >> .vscode/settings.json
 	@echo } >> .vscode/settings.json
 else
 	@echo '{' > .vscode/settings.json
-	@echo '    "python.linting.enabled": true,' >> .vscode/settings.json
-	@echo '    "python.linting.pylintEnabled": false,' >> .vscode/settings.json
-	@echo '    "python.linting.flake8Enabled": true,' >> .vscode/settings.json
-	@echo '    "python.linting.flake8Args": ["--max-line-length=88", "--select=C,E,F,W,B", "--extend-ignore=B009,E203,E501,W503"],' >> .vscode/settings.json
+	@echo '    "flake8.args": ["--max-line-length=88", "--select=C,E,F,W,B", "--extend-ignore=B009,E203,E501,W503"],' >> .vscode/settings.json
 	@echo '    "python.autoComplete.extraPaths": [".venv/lib/python$${env:PYTHON_VER}/site-packages"],' >> .vscode/settings.json
 	@echo '    "python.analysis.extraPaths": [".venv/lib/python$${env:PYTHON_VER}/site-packages"],' >> .vscode/settings.json
 	@echo '    "python.testing.pytestPath": ".venv/bin/pytest"' >> .vscode/settings.json
@@ -41,19 +46,31 @@ run:  ## Run project
 project-help:  ## Show project help
 	pdm run python -m scheduler --help
 
-test: clean  ## Run tests
+test:  ## Run tests
 	pdm run pytest tests -v
 
-pre-commit:  ## Run pre-commit
+pre-commit: clean  ## Run pre-commit
 	pdm run pre-commit run --all-files
+
+purge-logs:  ## Prompt user to purge logs that end with .log
+ifeq ($(OS),Windows_NT)
+	@for /r %%i in (logs\*.log) do @echo %%i
+	@echo "Purge logs? [y/N]"
+	@set /p choice=
+	@if /I "$(choice)"=="y" del /q logs\*.log
+else
+	@find logs -name "*.log" -print
+	@echo "Purge logs? [y/N]"
+	@read -r choice; if [ "$$choice" = "y" ]; then rm -f logs/*.log; fi
+endif
 
 clean:  ## Clean cached files
 ifeq ($(OS),Windows_NT)
-	del /q logs\pytest_test.log || true
-	rmdir /s /q .mypy_cache || true
-	rmdir /s /q .pytest_cache || true
-	rmdir /s /q src\scheduler\__pycache__ || true
-	rmdir /s /q tests\__pycache__ || true
+	del /q logs\pytest_test.log || :
+	rmdir /s /q .mypy_cache || :
+	rmdir /s /q .pytest_cache || :
+	rmdir /s /q src\scheduler\__pycache__ || :
+	rmdir /s /q tests\__pycache__ || :
 else
 	rm -f logs/pytest_test.log
 	rm -rf .mypy_cache
