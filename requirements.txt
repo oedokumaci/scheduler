@@ -80,6 +80,6 @@ types-PyYAML==6.0.12.9
 typing-extensions==4.5.0
 tzdata==2023.3
 unearth==0.9.1
-urllib3==2.0.2
+urllib3==2.0.7
 virtualenv==20.23.0
 wcwidth==0.2.6
