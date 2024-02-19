@@ -50,16 +50,17 @@ repos:
         entry: pdm lock --check
         language: system
         pass_filenames: false
-      # - id: pdm-export
-      #   name: pdm-export
-      #   entry: pdm export
-      #   args:
-      #     - -o
-      #     - requirements.txt
-      #     - --without-hashes
-      #     - -v
-      #   language: system
-      #   pass_filenames: false
+      - id: pdm-export
+        name: pdm-export
+        entry: pdm export
+        args:
+          - -o
+          - requirements.txt
+          - --without-hashes
+          - --pyproject
+          - -v
+        language: system
+        pass_filenames: false
       - id: mypy
         name: mypy
         entry: |
